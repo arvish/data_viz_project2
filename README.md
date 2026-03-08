@@ -16,11 +16,13 @@ Build an interactive visual analytics tool to explore Cincinnati 3-1-1 service r
 
 ---
 
-## Development Workflow (Solo, Team-Style)
+## Development Workflow (Solo)
 `main` is always kept stable and deployable. New features are built on feature branches and merged into `main` only when working.
 
-Example branches:
+Current branches:
 - `feature/leaflet-map-base`
+
+Future probable branches:
 - `feature/color-by-modes`
 - `feature/timeline-view`
 - `feature/attribute-charts`
@@ -38,16 +40,15 @@ Example branches:
 ---
 
 ## Data Notes
-The raw dataset may be large, so it is **not committed** by default.  
+The raw dataset is currently **not committed** by default.  
 Place the raw CSV locally in `data/raw/` and follow `data/README_DATA.md` for expected columns and preprocessing notes.
 
 **Data file (local):** `data/raw/311_service_requests.csv`  
-**Sample file (committed, optional):** `data/sample_311.csv`
 
 ---
 
 ## How to Run Locally
-This is a static web app; you must run a local server (not open `index.html` directly).
+[UPDATING SOON]
 
 ### Option A: Python
 ```bash
