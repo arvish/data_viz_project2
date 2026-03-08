@@ -6,8 +6,7 @@
 **Data:** Cincinnati 3-1-1 Service Requests (CSV)
 
 ## Links
-**Live App:** [PLACEHOLDER — Netlify/Vercel URL]  
-**GitHub Repo:** [PLACEHOLDER — repo URL]  
+**Live App:** [PLACEHOLDER — Netlify URL]  
 **Checkpoint Plan / Notes:** `docs/` (sketches + planning)  
 
 ---
