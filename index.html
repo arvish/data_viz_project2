@@ -74,6 +74,17 @@
       <div class="control">
         <label>&nbsp;</label>
         <button id="resetView" class="btn">Reset view</button>
+
+      <div class="control">
+        <label>&nbsp;</label>
+        <button id="clearFilters" class="btn ghost">Clear filters</button>
+      </div>
+
+      <div class="control">
+        <label>&nbsp;</label>
+        <button id="toggleBrush" class="btn ghost">Map brush: Off</button>
+      </div>
+
       </div>
 
       <div class="status">
@@ -82,12 +93,13 @@
       </div>
     </section>
 
+    
     <main class="grid">
       <section class="panel glass" id="mapPanel">
         <div class="panelHeader">
           <div>
             <h2>Map</h2>
-            <div class="panelHint">Hover a point for details. Hover a week in the timeline to highlight that week on the map.</div>
+            <div class="panelHint">Hover a point for details. Use the timeline or attribute charts to filter, or enable map brush mode to select points.</div>
           </div>
           <div class="panelRight">
             <div class="miniStat">
@@ -101,7 +113,9 @@
           </div>
         </div>
 
-        <div id="map" class="map"></div>
+        <div id="map" class="map">
+          <div id="mapBrushOverlay" class="mapBrushOverlay hidden" aria-hidden="true"></div>
+        </div>
 
         <div class="legend glass" id="legend">
           <div class="legendTitle" id="legendTitle">Legend</div>
@@ -113,7 +127,7 @@
         <div class="panelHeader">
           <div>
             <h2>Calls over the year</h2>
-            <div class="panelHint">Weekly bins across 2025. Hover for details.</div>
+            <div class="panelHint">Weekly bins across 2025. Drag to brush a time range, hover for details.</div>
           </div>
           <div class="panelRight">
             <div class="pill" id="timelineMode">Weekly</div>
@@ -123,10 +137,46 @@
         <div id="timeline" class="viz"></div>
 
         <div class="footnote">
-          Tip: The timeline uses weekly binning for readability. This preserves trends and seasonality without overplotting daily noise.
+          Tip: Brushing filters the map and all attribute charts. Use Clear filters to reset.
+        </div>
+      </section>
+
+      <section class="panel glass" id="attrPanel">
+        <div class="panelHeader">
+          <div>
+            <h2>Attributes</h2>
+            <div class="panelHint">Click a bar to filter. Click again to clear that filter.</div>
+          </div>
+          <div class="panelRight">
+            <div class="pill soft" id="activeFilters">No active filters</div>
+          </div>
+        </div>
+
+        <div class="attrGrid">
+          <div class="miniPanel">
+            <div class="miniTitle">Neighborhoods</div>
+            <div id="chartNeighborhood" class="vizSmall"></div>
+          </div>
+          <div class="miniPanel">
+            <div class="miniTitle">Method received</div>
+            <div id="chartMethod" class="vizSmall"></div>
+          </div>
+          <div class="miniPanel">
+            <div class="miniTitle">Responsible department</div>
+            <div id="chartDept" class="vizSmall"></div>
+          </div>
+          <div class="miniPanel">
+            <div class="miniTitle">Priority levels</div>
+            <div id="chartPriority" class="vizSmall"></div>
+          </div>
+        </div>
+
+        <div class="footnote">
+          Linked interactions: selections from the timeline, the attribute views, or the map brush update everything on the page.
         </div>
       </section>
     </main>
+
   </div>
 
   <div id="tooltip" class="tooltip hidden" role="dialog" aria-hidden="true"></div>

@@ -193,7 +193,10 @@ select:focus, button:focus{
   padding: 10px;
   min-height: 0;
   position: relative;
+  display:flex;
+  flex-direction:column;
 }
+
 
 .panelHeader{
   display: flex;
@@ -242,8 +245,10 @@ select:focus, button:focus{
 }
 
 .map{
-    position: relative;
-height: 560px;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 420px;
+  height: auto;
   width: 100%;
   border-radius: 14px;
   overflow: hidden;
@@ -251,7 +256,9 @@ height: 560px;
 }
 
 .viz{
-  height: 560px;
+  flex: 1 1 auto;
+  min-height: 280px;
+  height: auto;
   width: 100%;
   border-radius: 14px;
   overflow: hidden;
@@ -267,7 +274,7 @@ height: 560px;
   padding: 10px 10px;
   border-radius: 14px;
   background: rgba(7, 17, 26, 0.55);
-  z-index: 1200;
+  z-index: 9500;
   pointer-events: auto;
 }
 .legendTitle{
@@ -382,4 +389,129 @@ height: 560px;
 circle.point{
   mix-blend-mode: screen;
   filter: drop-shadow(0 0 6px rgba(103,232,249,0.35));
+}
+
+
+/* -----------------------------
+   Level 3–5 additions
+------------------------------ */
+
+.grid{
+  grid-template-columns: 1.55fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  height: calc(100vh - 210px);
+}
+
+#mapPanel{
+  grid-column: 1 / 2;
+  grid-row: 1 / 3;
+}
+
+#timelinePanel{
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+}
+
+#attrPanel{
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+}
+
+.attrGrid{
+  flex: 1 1 auto;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.miniPanel{
+  padding: 10px;
+  display:flex;
+  flex-direction:column;
+  border-radius: 14px;
+  background: rgba(10, 20, 32, 0.32);
+  border: 1px solid rgba(232,245,255,0.08);
+}
+
+.miniTitle{
+  font-weight: 800;
+  font-size: 0.90rem;
+  color: rgba(232,245,255,0.86);
+  margin-bottom: 6px;
+}
+
+.vizSmall{
+  flex: 1 1 auto;
+  min-height: 160px;
+  height: auto;
+}
+
+.vizSmall svg{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.viz svg{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Map brush overlay layer (only covers the map canvas) */
+#map{
+  position: relative;
+}
+.mapBrushOverlay{
+  position:absolute;
+  inset: 0;
+  z-index: 6000;
+  pointer-events: auto;
+}
+.mapBrushOverlay.hidden{ display:none; }
+.brush .selection{
+  fill: rgba(103,232,249,0.12);
+  stroke: rgba(103,232,249,0.85);
+  stroke-width: 1.5px;
+}
+
+.brush .handle{
+  fill: rgba(232,245,255,0.20);
+}
+
+/* Points styling improvements */
+circle.point{
+  filter: drop-shadow(0 0 10px rgba(103,232,249,0.12));
+}
+
+circle.point.selected{
+  stroke: rgba(232,245,255,0.92);
+  stroke-width: 1.4;
+  opacity: 0.98;
+}
+
+circle.point.dimmed{
+  opacity: 0.18;
+}
+
+/* Small pills */
+.pill.soft{
+  background: rgba(232,245,255,0.08);
+  border: 1px solid rgba(232,245,255,0.10);
+  color: rgba(232,245,255,0.86);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px){
+  .grid{
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    min-height: unset;
+  }
+  #mapPanel, #timelinePanel, #attrPanel{
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .vizSmall{ height: 200px; }
 }
