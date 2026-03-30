@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DataViz Project 2 — Cincinnati 3-1-1 Dashboard</title>
+  <title>Project 2 — Cincinnati 3-1-1 Dashboard</title>
 
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +23,109 @@
 </head>
 
 <body>
+  <div class="app">
 
+    <header class="topbar card">
+      <div class="titleblock">
+        <div class="kicker">Data Visualization — Project 2</div>
+        <h1>Cincinnati 3-1-1 Explorer</h1>
+        <div class="subtitle">Spatial + time + attribute views (Leaflet + D3). Built for Chrome.</div>
+      </div>
+
+      <div class="meta">
+        <div><span class="muted">Author</span><br><strong>Arvish Pandey</strong></div>
+        <div><span class="muted">Dataset</span><br><strong>311 Service Requests</strong></div>
+        <div><span class="muted">Year Filter</span><br><strong id="yearLabel">TBD</strong></div>
+      </div>
+    </header>
+
+    <section class="controls card">
+      <div class="control">
+        <label for="serviceType">Service Type</label>
+        <select id="serviceType">
+          <option value="ALL" selected>All (placeholder)</option>
+          <option value="POTHOLE">Pothole</option>
+          <option value="TRASH">Trash</option>
+          <option value="STREETLIGHT">Streetlight</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label for="colorBy">Color By</label>
+        <select id="colorBy">
+          <option value="time_to_update" selected>Time-to-update</option>
+          <option value="neighborhood">Neighborhood</option>
+          <option value="priority">Priority</option>
+          <option value="agency">Agency</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label for="basemap">Base Map</label>
+        <select id="basemap">
+          <option value="dark" selected>Dark</option>
+          <option value="light">Light</option>
+          <option value="streets">Streets</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label>&nbsp;</label>
+        <button id="reset">Reset View</button>
+      </div>
+
+      <div class="control grow">
+        <label class="muted">Status</label>
+        <div class="statusline" id="statusLine">Scaffold running. Map is live. Charts are placeholders.</div>
+      </div>
+    </section>
+
+    <main class="grid">
+      <section class="panel card" id="mapPanel">
+        <div class="panelHeader">
+          <h2>Map View</h2>
+          <div class="panelHint">Hover points • (Later) filter/brush/link</div>
+        </div>
+        <div id="map"></div>
+      </section>
+
+      <section class="panel card" id="timelinePanel">
+        <div class="panelHeader">
+          <h2>Timeline</h2>
+          <div class="panelHint">(Placeholder) volume over time</div>
+        </div>
+        <div id="timeline"></div>
+      </section>
+
+      <section class="panel card" id="chartPanel">
+        <div class="panelHeader">
+          <h2>Attribute View</h2>
+          <div class="panelHint">(Placeholder) breakdown by category</div>
+        </div>
+        <div id="chart"></div>
+      </section>
+
+      <section class="panel card" id="detailsPanel">
+        <div class="panelHeader">
+          <h2>Details</h2>
+          <div class="panelHint">Hover a point to see details</div>
+        </div>
+        <div id="details" class="detailsText">
+          Hover a map point to see a stub record here. When you wire the dataset, this becomes the “truth panel”.
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <div id="tooltip" class="tooltip hidden"></div>
+
+  <!-- Libraries -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
   <!-- Your app -->
