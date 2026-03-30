@@ -1,224 +1,385 @@
 :root{
-  --bg:#0b1220;
-  --card:#0f1728;
-  --card2:#0d1526;
-  --text:#e6edf7;
-  --muted:#98a6bd;
-  --border: rgba(255,255,255,0.08);
-  --shadow: 0 10px 28px rgba(0,0,0,0.32);
-  --radius: 14px;
+  color-scheme: dark;
+  --bg: #07111a;
+  --fg: #e8f5ff;
+  --muted: rgba(232,245,255,0.72);
+  --soft: rgba(232,245,255,0.10);
+  --border: rgba(232,245,255,0.12);
 
-  --accent:#67e8f9;
-  --accent2:#60a5fa;
+  --glass: rgba(10, 20, 32, 0.62);
+  --glass2: rgba(10, 20, 32, 0.40);
+
+  --shadow: 0 20px 55px rgba(0,0,0,0.38);
+  --radius: 16px;
+
+  --accent: rgba(103,232,249,1);
+  --accent2: rgba(96,165,250,1);
 }
 
-*{ box-sizing:border-box; }
-
-html,body{
-  height:100%;
-  margin:0;
-  font-family:"Inter", system-ui, sans-serif;
-  background: radial-gradient(circle at top, #0f1b33 0%, var(--bg) 50%);
-  color: var(--text);
+*{ box-sizing: border-box; }
+html, body{
+  height: 100%;
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, rgba(33, 93, 131, 0.28), transparent 30%), var(--bg);
+  color: var(--fg);
 }
 
-.app{
-  width:min(1960px, 99vw);
-  margin: 10px auto 14px;
-  display:grid;
-  gap: 10px;
+.bg-grid{
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(130, 177, 207, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(130, 177, 207, 0.06) 1px, transparent 1px);
+  background-size: 38px 38px;
+  pointer-events: none;
+  opacity: 0.7;
+  animation: gridDrift 24s linear infinite;
 }
 
-.card{
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+@keyframes gridDrift{
+  0%{ transform: translate(0,0); }
+  100%{ transform: translate(38px,38px); }
+}
+
+.glow{
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.glow-a{ width: 520px; height: 520px; background: rgba(73, 213, 255, 0.16); top: -140px; left: -160px; }
+.glow-b{ width: 460px; height: 460px; background: rgba(255, 170, 75, 0.14); bottom: -160px; right: -120px; }
+
+.app-shell{
+  position: relative;
+  z-index: 1;
+  padding: 16px 18px 22px;
+  width: min(1400px, 98vw);
+  margin: 0 auto;
+}
+
+.glass{
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
 }
 
 .topbar{
-  display:flex;
-  justify-content:space-between;
-  gap:16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
   padding: 14px 16px;
-  align-items:flex-start;
 }
 
 .kicker{
-  font-size:0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 0.85rem;
   color: var(--muted);
-  font-weight:600;
-  letter-spacing:0.02em;
 }
 
 h1{
-  margin:6px 0 4px;
-  font-size: 1.35rem;
-  font-weight: 800;
+  margin: 6px 0 4px;
+  font-size: 1.45rem;
+  font-weight: 850;
 }
 
 .subtitle{
+  font-size: 0.95rem;
   color: var(--muted);
-  font-size: 0.92rem;
+}
+
+.pill{
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(232,245,255,0.14);
+  background: rgba(7, 17, 26, 0.45);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: rgba(232,245,255,0.82);
 }
 
 .meta{
-  display:grid;
+  display: grid;
   grid-template-columns: repeat(3, minmax(120px, 1fr));
   gap: 10px;
-  text-align:right;
-  align-items:start;
+  text-align: right;
+  align-items: start;
 }
 
-.muted{ color: var(--muted); }
+.metaLabel{
+  font-size: 0.78rem;
+  color: rgba(232,245,255,0.62);
+  font-weight: 700;
+}
+.metaValue{
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-top: 2px;
+}
 
 .controls{
-  display:flex;
-  gap: 10px;
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
   padding: 10px 12px;
-  align-items:flex-end;
-  flex-wrap:wrap;
+  flex-wrap: wrap;
 }
 
 .control{
-  display:grid;
+  display: grid;
   gap: 6px;
-  min-width: 175px;
-}
-
-.control.grow{
-  flex:1;
-  min-width: 280px;
+  min-width: 220px;
 }
 
 label{
-  font-size:0.82rem;
-  color: var(--muted);
-  font-weight: 650;
+  font-size: 0.82rem;
+  color: rgba(232,245,255,0.70);
+  font-weight: 750;
 }
 
 select, button{
-  background: rgba(10, 16, 30, 0.65);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 10px;
-  font-size: 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(232,245,255,0.14);
+  background: rgba(7, 17, 26, 0.55);
+  color: var(--fg);
+  padding: 10px 10px;
+  font-size: 0.92rem;
+  outline: none;
 }
 
-button{
-  cursor:pointer;
-  font-weight:700;
+select:focus, button:focus{
+  border-color: rgba(103,232,249,0.55);
+  box-shadow: 0 0 0 3px rgba(103,232,249,0.14);
 }
 
-button:hover{
-  border-color: rgba(103,232,249,0.45);
+.btn{
+  cursor: pointer;
+  font-weight: 850;
+}
+.btn:hover{
+  border-color: rgba(96,165,250,0.55);
 }
 
-.statusline{
-  padding: 9px 10px;
-  border-radius: 10px;
-  border: 1px dashed rgba(255,255,255,0.12);
-  color: var(--muted);
-  background: rgba(10, 16, 30, 0.35);
+.status{
+  flex: 1;
+  min-width: 280px;
+}
+.statusLine{
+  font-weight: 800;
+  color: rgba(232,245,255,0.92);
+}
+.statusSub{
+  margin-top: 3px;
+  font-size: 0.86rem;
+  color: rgba(232,245,255,0.64);
 }
 
 .grid{
-  display:grid;
-  grid-template-columns: 1.7fr 1fr;
-  grid-template-rows: 1.25fr 0.75fr;
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
   gap: 10px;
-  min-height: 0;
+  align-items: stretch;
 }
 
-/* Panel */
 .panel{
   padding: 10px;
   min-height: 0;
+  position: relative;
 }
 
 .panelHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
   margin-bottom: 8px;
 }
 
 .panelHeader h2{
-  margin:0;
-  font-size: 0.98rem;
-  font-weight: 800;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
 }
-
 .panelHint{
-  font-size: 0.78rem;
-  color: var(--muted);
+  margin-top: 4px;
+  font-size: 0.83rem;
+  color: rgba(232,245,255,0.62);
+  line-height: 1.25;
 }
 
-#mapPanel{ grid-column: 1 / 2; grid-row: 1 / 3; }
-#timelinePanel{ grid-column: 2 / 3; grid-row: 1 / 2; }
-#chartPanel{ grid-column: 2 / 3; grid-row: 2 / 3; }
-#detailsPanel{ grid-column: 1 / 3; grid-row: 3 / 4; display:none; } /* enable later if you want */
-
-/* Make map + charts fill viewport nicely without forcing scroll */
-#mapPanel, #timelinePanel, #chartPanel{
-  min-height: clamp(320px, 42vh, 560px);
+.panelRight{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
-#map, #timeline, #chart{
-  width:100%;
-  height: calc(100% - 30px);
-  min-height: 240px;
+.miniStat{
+  padding: 8px 10px;
   border-radius: 12px;
-  overflow:hidden;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(232,245,255,0.12);
+  background: rgba(7, 17, 26, 0.35);
+  min-width: 100px;
+  text-align: right;
+}
+.miniLabel{
+  font-size: 0.75rem;
+  color: rgba(232,245,255,0.62);
+  font-weight: 750;
+}
+.miniValue{
+  font-size: 1rem;
+  font-weight: 900;
+  margin-top: 2px;
 }
 
-/* Leaflet tweaks for dark UI */
-.leaflet-control-zoom a{
-  background: rgba(10, 16, 30, 0.85) !important;
-  color: var(--text) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-}
-.leaflet-control-attribution{
-  background: rgba(10, 16, 30, 0.55) !important;
-  color: rgba(230,237,247,0.65) !important;
+.map{
+    position: relative;
+height: 560px;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(232,245,255,0.10);
 }
 
-/* Tooltip */
+.viz{
+  height: 560px;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(232,245,255,0.10);
+  background: rgba(7, 17, 26, 0.22);
+}
+
+.legend{
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  width: 280px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  background: rgba(7, 17, 26, 0.55);
+  z-index: 1200;
+  pointer-events: auto;
+}
+.legendTitle{
+  font-weight: 900;
+  font-size: 0.92rem;
+  margin-bottom: 6px;
+}
+.legendBody{
+  font-size: 0.84rem;
+  color: rgba(232,245,255,0.80);
+}
+.legendRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 5px 0;
+}
+.swatch{
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.18);
+  flex: 0 0 auto;
+}
+.legendLeft{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.legendLabel{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+}
+
+.legendGradient{
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+  margin: 8px 0 6px;
+}
+.legendMinMax{
+  display: flex;
+  justify-content: space-between;
+  color: rgba(232,245,255,0.62);
+  font-size: 0.78rem;
+}
+
+.footnote{
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: rgba(232,245,255,0.62);
+  line-height: 1.35;
+}
+
 .tooltip{
   position: fixed;
   z-index: 9999;
   pointer-events: none;
-  background: rgba(13, 18, 30, 0.95);
-  color: var(--text);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 10px;
-  padding: 8px 10px;
-  box-shadow: var(--shadow);
-  max-width: 280px;
-  font-size: 0.82rem;
-  line-height: 1.35;
+  max-width: 320px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  background: rgba(7, 17, 26, 0.92);
+  border: 1px solid rgba(232,245,255,0.14);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.44);
+  backdrop-filter: blur(10px);
+  font-size: 0.86rem;
+  line-height: 1.3;
 }
-.hidden{ display:none; }
+.hidden{ display: none; }
+.ttTitle{
+  font-weight: 950;
+  margin-bottom: 6px;
+}
+.ttRow{ color: rgba(232,245,255,0.78); margin: 2px 0; }
+.ttKey{ color: rgba(232,245,255,0.60); font-weight: 750; }
 
-.detailsText{
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.45;
+/*
+  IMPORTANT: Do not globally force all SVGs to 100% width/height.
+  Leaflet injects an SVG into .leaflet-overlay-pane with pixel dimensions
+  that it manages internally. Overriding it can collapse the overlay and
+  make map points invisible.
+*/
+
+/* Only size the visualization SVGs we own (timeline, etc.) */
+#timeline svg{ width: 100%; height: 100%; display: block; }
+
+/* Let Leaflet control its overlay SVG size */
+.leaflet-overlay-pane svg{ width: auto !important; height: auto !important; }
+
+.leaflet-control-attribution{
+  background: rgba(7, 17, 26, 0.55) !important;
+  color: rgba(232,245,255,0.62) !important;
+}
+.leaflet-control-zoom a{
+  background: rgba(7, 17, 26, 0.85) !important;
+  border: 1px solid rgba(232,245,255,0.14) !important;
+  color: rgba(232,245,255,0.90) !important;
 }
 
-svg{ width:100%; height:100%; display:block; }
+@media (max-width: 1120px){
+  .meta{ grid-template-columns: 1fr; text-align: left; }
+  .grid{ grid-template-columns: 1fr; }
+  .map, .viz{ height: 520px; }
+}
 
-/* Responsive: stack right panels under map when narrow */
-@media (max-width: 1200px){
-  .meta{ grid-template-columns: 1fr; text-align:left; }
-  .grid{
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-  }
-  #mapPanel{ grid-column:auto; grid-row:auto; }
-  #timelinePanel{ grid-column:auto; grid-row:auto; }
-  #chartPanel{ grid-column:auto; grid-row:auto; }
+
+/* Make points pop on dark basemaps */
+circle.point{
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 6px rgba(103,232,249,0.35));
 }

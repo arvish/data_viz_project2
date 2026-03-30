@@ -1,55 +1,40 @@
-# Project 2 — “Who you gonna call? 3-1-1!” (Cincinnati Service Requests)
+# Cincinnati 3-1-1 (Project 2) — Level 1–2 Implementation
 
-**Author:** Arvish Pandey  
-**Course:** Data Visualization  
-**Stack:** D3.js + JavaScript + HTML + CSS, Leaflet (map)  
-**Data:** Cincinnati 3-1-1 Service Requests (CSV)
+This is a framework-free Leaflet + D3 web app that implements:
 
-## Links
-**Live App:** [PLACEHOLDER — Netlify URL]  
-**Checkpoint Plan / Notes:** `docs/` (sketches + planning)  
+- **Level 1:** Interactive map of **POTHOLE, REPAIR** requests (2025), with details-on-demand tooltips and multiple “color by” modes.
+- **Level 2:** Weekly timeline of requests across the year, with hover tooltips and linked highlighting back to the map.
 
----
+## Run locally
 
-## Project Goal
-Build an interactive visual analytics tool to explore Cincinnati 3-1-1 service requests. The focus is on spatial patterns, time trends, and how request attributes (agency, priority, neighborhood, update time) relate to each other through coordinated views and interaction.
+From the project root:
 
----
-
-## Development Workflow (Solo)
-`main` is always kept stable and deployable. New features are built on feature branches and merged into `main` only when working.
-
-Current branches:
-- `feature/leaflet-map-base`
-
-Future probable branches:
-- `feature/color-by-modes`
-- `feature/timeline-view`
-- `feature/attribute-charts`
-- `feature/linked-brushing`
-
----
-
-## Repo Structure (Planned)
-- `index.html` — layout + containers  
-- `style.css` — layout + typography  
-- `js/` — app code (state, map view, timeline view, charts, interactions)  
-- `data/` — dataset notes + (optional) small sample CSV  
-- `docs/` — sketches + planning artifacts
-
----
-
-## Data Notes
-The raw dataset is currently **not committed** by default.  
-Place the raw CSV locally in `data/raw/` and follow `data/README_DATA.md` for expected columns and preprocessing notes.
-
-**Data file (local):** `data/raw/311_service_requests.csv`  
-
----
-
-## How to Run Locally
-[UPDATING SOON]
-
-### Option A: Python
 ```bash
 python -m http.server 8000
+```
+
+Then open:
+
+- http://localhost:8000
+
+## Data
+
+This project ships with a preprocessed dataset:
+
+- `data/pothole_2025.csv`
+- `data/meta.json`
+
+If you want to regenerate from the full city CSV/ZIP, run:
+
+```bash
+python scripts/preprocess_pothole.py --zip "Cincinnati_311_(Non-Emergency)_Service_Requests_20260227.zip"
+```
+
+(Or use `--csv` if you have the CSV extracted.)
+
+## Notes on “color by”
+
+- **Time between created and last update:** quantitative, sequential scale (`d3.interpolateCividis`)
+- **Neighborhood:** nominal, categorical palette for top neighborhoods plus an “Other” bucket
+- **Priority:** ordinal-ish, ordered palette by severity
+- **Public agency:** nominal, categorical scale

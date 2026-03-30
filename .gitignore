@@ -1,18 +1,8 @@
-# --- OS ---
 .DS_Store
 Thumbs.db
-
-# --- Python / venv ---
-.venv/
-__pycache__/
-*.pyc
-.ipynb_checkpoints/
-
-# --- Node / tooling (if you add later) ---
 node_modules/
 dist/
 build/
-
-# --- Env / secrets ---
 .env
-.env.*
+.venv/
+__pycache__/

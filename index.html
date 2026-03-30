@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Project 2 — Cincinnati 3-1-1 Dashboard</title>
+  <title>Project 2 — Cincinnati 311 | Pothole Repair</title>
 
-  <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Leaflet -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -18,117 +16,127 @@
     crossorigin=""
   />
 
-  <!-- Your CSS -->
   <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body>
-  <div class="app">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="glow glow-a" aria-hidden="true"></div>
+  <div class="glow glow-b" aria-hidden="true"></div>
 
-    <header class="topbar card">
+  <div class="app-shell">
+    <header class="topbar glass">
       <div class="titleblock">
         <div class="kicker">Data Visualization — Project 2</div>
-        <h1>Cincinnati 3-1-1 Explorer</h1>
-        <div class="subtitle">Spatial + time + attribute views (Leaflet + D3). Built for Chrome.</div>
+        <h1>Cincinnati 3-1-1, Pothole Repair</h1>
+        <div class="subtitle">
+          Spatial distribution + calls-over-time for <span class="pill">POTHOLE, REPAIR</span> (2025).
+          Built with Leaflet + D3.
+        </div>
       </div>
 
       <div class="meta">
-        <div><span class="muted">Author</span><br><strong>Arvish Pandey</strong></div>
-        <div><span class="muted">Dataset</span><br><strong>311 Service Requests</strong></div>
-        <div><span class="muted">Year Filter</span><br><strong id="yearLabel">TBD</strong></div>
+        <div class="metaItem">
+          <div class="metaLabel">Author</div>
+          <div class="metaValue">Arvish Pandey</div>
+        </div>
+        <div class="metaItem">
+          <div class="metaLabel">Data source</div>
+          <div class="metaValue">Cincinnati Open Data Portal</div>
+        </div>
+        <div class="metaItem">
+          <div class="metaLabel">Year</div>
+          <div class="metaValue" id="yearLabel">—</div>
+        </div>
       </div>
     </header>
 
-    <section class="controls card">
+    <section class="controls glass">
       <div class="control">
-        <label for="serviceType">Service Type</label>
-        <select id="serviceType">
-          <option value="ALL" selected>All (placeholder)</option>
-          <option value="POTHOLE">Pothole</option>
-          <option value="TRASH">Trash</option>
-          <option value="STREETLIGHT">Streetlight</option>
-        </select>
-      </div>
-
-      <div class="control">
-        <label for="colorBy">Color By</label>
+        <label for="colorBy">Color by</label>
         <select id="colorBy">
-          <option value="time_to_update" selected>Time-to-update</option>
-          <option value="neighborhood">Neighborhood</option>
+          <option value="delay" selected>Time between created and last update</option>
+          <option value="neighborhood">Neighborhood (top)</option>
           <option value="priority">Priority</option>
-          <option value="agency">Agency</option>
+          <option value="dept">Public agency (department)</option>
         </select>
       </div>
 
       <div class="control">
-        <label for="basemap">Base Map</label>
+        <label for="basemap">Map background</label>
         <select id="basemap">
-          <option value="dark" selected>Dark</option>
-          <option value="light">Light</option>
-          <option value="streets">Streets</option>
+          <option value="dark" selected>Dark (CARTO)</option>
+          <option value="light">Light (CARTO)</option>
+          <option value="aerial">Aerial (Esri)</option>
         </select>
       </div>
 
       <div class="control">
         <label>&nbsp;</label>
-        <button id="reset">Reset View</button>
+        <button id="resetView" class="btn">Reset view</button>
       </div>
 
-      <div class="control grow">
-        <label class="muted">Status</label>
-        <div class="statusline" id="statusLine">Scaffold running. Map is live. Charts are placeholders.</div>
+      <div class="status">
+        <div class="statusLine" id="statusLine">Loading data…</div>
+        <div class="statusSub" id="statusSub"></div>
       </div>
     </section>
 
     <main class="grid">
-      <section class="panel card" id="mapPanel">
+      <section class="panel glass" id="mapPanel">
         <div class="panelHeader">
-          <h2>Map View</h2>
-          <div class="panelHint">Hover points • (Later) filter/brush/link</div>
+          <div>
+            <h2>Map</h2>
+            <div class="panelHint">Hover a point for details. Hover a week in the timeline to highlight that week on the map.</div>
+          </div>
+          <div class="panelRight">
+            <div class="miniStat">
+              <div class="miniLabel">Mapped</div>
+              <div class="miniValue" id="mappedCount">—</div>
+            </div>
+            <div class="miniStat">
+              <div class="miniLabel">Not mapped</div>
+              <div class="miniValue" id="missingCount">—</div>
+            </div>
+          </div>
         </div>
-        <div id="map"></div>
+
+        <div id="map" class="map"></div>
+
+        <div class="legend glass" id="legend">
+          <div class="legendTitle" id="legendTitle">Legend</div>
+          <div class="legendBody" id="legendBody"></div>
+        </div>
       </section>
 
-      <section class="panel card" id="timelinePanel">
+      <section class="panel glass" id="timelinePanel">
         <div class="panelHeader">
-          <h2>Timeline</h2>
-          <div class="panelHint">(Placeholder) volume over time</div>
+          <div>
+            <h2>Calls over the year</h2>
+            <div class="panelHint">Weekly bins across 2025. Hover for details.</div>
+          </div>
+          <div class="panelRight">
+            <div class="pill" id="timelineMode">Weekly</div>
+          </div>
         </div>
-        <div id="timeline"></div>
-      </section>
 
-      <section class="panel card" id="chartPanel">
-        <div class="panelHeader">
-          <h2>Attribute View</h2>
-          <div class="panelHint">(Placeholder) breakdown by category</div>
-        </div>
-        <div id="chart"></div>
-      </section>
+        <div id="timeline" class="viz"></div>
 
-      <section class="panel card" id="detailsPanel">
-        <div class="panelHeader">
-          <h2>Details</h2>
-          <div class="panelHint">Hover a point to see details</div>
-        </div>
-        <div id="details" class="detailsText">
-          Hover a map point to see a stub record here. When you wire the dataset, this becomes the “truth panel”.
+        <div class="footnote">
+          Tip: The timeline uses weekly binning for readability. This preserves trends and seasonality without overplotting daily noise.
         </div>
       </section>
     </main>
-
   </div>
 
-  <div id="tooltip" class="tooltip hidden"></div>
+  <div id="tooltip" class="tooltip hidden" role="dialog" aria-hidden="true"></div>
 
-  <!-- Libraries -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-
-  <!-- Your app -->
   <script src="./js/main.js"></script>
 </body>
 </html>
