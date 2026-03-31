@@ -9,10 +9,15 @@
     mappedCount: document.getElementById("mappedCount"),
     missingCount: document.getElementById("missingCount"),
     colorBy: document.getElementById("colorBy"),
+    mapLayer: document.getElementById("mapLayer"),
+    heatControls: document.getElementById("heatControls"),
+    heatRadius: document.getElementById("heatRadius"),
     basemap: document.getElementById("basemap"),
     resetView: document.getElementById("resetView"),
     clearFilters: document.getElementById("clearFilters"),
     toggleBrush: document.getElementById("toggleBrush"),
+    serviceTypesBtn: document.getElementById("serviceTypesBtn"),
+
     legendTitle: document.getElementById("legendTitle"),
     legendBody: document.getElementById("legendBody"),
     activeFilters: document.getElementById("activeFilters"),
@@ -20,10 +25,20 @@
     mapBrushOverlay: document.getElementById("mapBrushOverlay"),
 
     timeline: document.getElementById("timeline"),
+    chartService: document.getElementById("chartService"),
     chartNeighborhood: document.getElementById("chartNeighborhood"),
     chartMethod: document.getElementById("chartMethod"),
     chartDept: document.getElementById("chartDept"),
-    chartPriority: document.getElementById("chartPriority")
+    chartPriority: document.getElementById("chartPriority"),
+
+    // Modal
+    serviceModal: document.getElementById("serviceModal"),
+    closeServiceModal: document.getElementById("closeServiceModal"),
+    typeSearch: document.getElementById("typeSearch"),
+    typeList: document.getElementById("typeList"),
+    typesAll: document.getElementById("typesAll"),
+    typesNone: document.getElementById("typesNone"),
+    typesResetColors: document.getElementById("typesResetColors")
   };
 
   const tooltip = d3.select("#tooltip");
@@ -36,9 +51,17 @@
     rows: [],
     mapRows: [],
 
-    // Color mode
-    colorMode: "delay",
+    // UI modes
+    colorMode: "service",
+    mapLayerMode: "heat", // heat | points | both
+    heatRadius: 24,
     basemap: "dark",
+
+    // Service type controls (Level 6)
+    typeOrder: [],
+    typeCounts: new Map(),
+    activeTypes: new Set(),
+    typeColors: new Map(),
 
     // Linked interaction state
     hoverWeek: null,
@@ -60,6 +83,31 @@
       dept: null
     }
   };
+
+  const POINT_RENDER_LIMIT = 12000;
+  let pointRenderFrame = null;
+
+  function getPointRadius() {
+    const z = map.getZoom();
+    if (z <= 11) return 2.7;
+    if (z === 12) return 3.3;
+    if (z === 13) return 4.0;
+    return 4.9;
+  }
+
+  function schedulePointRender() {
+    if (pointRenderFrame) cancelAnimationFrame(pointRenderFrame);
+    pointRenderFrame = requestAnimationFrame(() => {
+      pointRenderFrame = null;
+      renderMapPoints();
+    });
+  }
+
+  function applyBasemapTheme() {
+    const mapEl = document.getElementById("map");
+    if (!mapEl) return;
+    mapEl.dataset.basemap = state.basemap;
+  }
 
   // -----------------------------
   // Leaflet map + base layers
@@ -88,11 +136,55 @@
   map.setMaxZoom(18);
 
   baseLayers[state.basemap].addTo(map);
+  applyBasemapTheme();
 
   // Leaflet SVG overlay for D3 points
   L.svg().addTo(map);
   const overlaySvg = d3.select(map.getPanes().overlayPane).select("svg");
   const gPoints = overlaySvg.append("g").attr("class", "leaflet-zoom-hide");
+
+  // Leaflet heat layer (Level 7)
+  let heatLayer = null;
+
+  function ensureHeatLayer() {
+    if (heatLayer) return;
+    heatLayer = L.heatLayer([], {
+      radius: state.heatRadius,
+      blur: Math.round(state.heatRadius * 0.85),
+      maxZoom: 17,
+      minOpacity: 0.18
+    });
+    heatLayer.addTo(map);
+  }
+
+  function removeHeatLayer() {
+    if (!heatLayer) return;
+    map.removeLayer(heatLayer);
+    heatLayer = null;
+  }
+
+  function renderHeatmap() {
+    const { filteredMapRows } = getFilteredSets();
+    const wantHeat = (state.mapLayerMode === "heat" || state.mapLayerMode === "both");
+    if (!wantHeat) {
+      removeHeatLayer();
+      return;
+    }
+    ensureHeatLayer();
+
+    if (heatLayer.setOptions) {
+      heatLayer.setOptions({ radius: state.heatRadius, blur: Math.round(state.heatRadius * 0.85) });
+    }
+
+    const pts = filteredMapRows.map(d => [d.lat, d.lon, 1]);
+    heatLayer.setLatLngs(pts);
+  }
+
+  function syncHeatControls() {
+    const show = (state.mapLayerMode === "heat" || state.mapLayerMode === "both");
+    if (els.heatControls) els.heatControls.classList.toggle("hidden", !show);
+  }
+
 
   // -----------------------------
   // Helpers
@@ -127,6 +219,7 @@
 
     return {
       sr_number: d.SR_NUMBER,
+      sr_type: d.SR_TYPE,
       sr_type_desc: d.SR_TYPE_DESC,
       priority: d.PRIORITY,
       dept_name: d.DEPT_NAME,
@@ -201,10 +294,38 @@
   }
 
   function updateLegend() {
+    if (state.colorMode === "service") return setLegendServiceTypes();
     if (state.colorMode === "delay") return setLegendDelay();
     if (state.colorMode === "neighborhood") return setLegendCategorical("Neighborhood (top)", state.scales.neighborhood);
     if (state.colorMode === "priority") return setLegendCategorical("Priority", state.scales.priority);
     if (state.colorMode === "dept") return setLegendCategorical("Public agency (department)", state.scales.dept, 10);
+  }
+
+  function getTypeColor(type) {
+    return state.typeColors.get(type) || "rgba(232,245,255,0.28)";
+  }
+
+  function setLegendServiceTypes() {
+    els.legendTitle.textContent = "Service type";
+
+    const active = state.typeOrder.filter(t => state.activeTypes.has(t));
+    const shown = active.slice(0, 10);
+    const extra = active.length - shown.length;
+
+    const rows = shown.map(t => `
+      <div class="legendRow">
+        <div class="legendSwatch" style="background:${getTypeColor(t)}"></div>
+        <div class="legendKey">${t}</div>
+      </div>
+    `).join("");
+
+    els.legendBody.innerHTML = `
+      <div class="legendList">${rows}</div>
+      ${extra > 0 ? `<div style="margin-top:6px; color:rgba(232,245,255,0.62); font-size:0.80rem;">+${extra} more active</div>` : ""}
+      <div style="margin-top:6px; color:rgba(232,245,255,0.62); font-size:0.80rem;">
+        Categorical colors for nominal groups. Use Service types to toggle or customize.
+      </div>
+    `;
   }
 
   function setLegendDelay() {
@@ -249,11 +370,130 @@
     `;
   }
 
+  
   // -----------------------------
+  // Service types UI (Level 6)
+  // -----------------------------
+  const LS_COLORS = "p2_type_colors_v1";
+  const LS_ACTIVE = "p2_active_types_v1";
+
+  function persistTypeState() {
+    try {
+      const colorsObj = {};
+      for (const t of state.typeOrder) colorsObj[t] = getTypeColor(t);
+      localStorage.setItem(LS_COLORS, JSON.stringify(colorsObj));
+      localStorage.setItem(LS_ACTIVE, JSON.stringify([...state.activeTypes]));
+    } catch (e) {
+      // ignore storage errors
+    }
+  }
+
+  function loadTypeStateFromStorage() {
+    try {
+      const colors = JSON.parse(localStorage.getItem(LS_COLORS) || "null");
+      if (colors) {
+        for (const t of state.typeOrder) {
+          if (colors[t]) state.typeColors.set(t, colors[t]);
+        }
+      }
+      const act = JSON.parse(localStorage.getItem(LS_ACTIVE) || "null");
+      if (Array.isArray(act)) {
+        state.activeTypes = new Set(act.filter(t => state.typeOrder.includes(t)));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function initTypesFromData() {
+    const counts = d3.rollups(state.rows, v => v.length, d => d.sr_type_desc)
+      .sort((a,b) => d3.descending(a[1], b[1]));
+    state.typeOrder = counts.map(d => d[0]);
+    state.typeCounts = new Map(counts);
+
+    // default colors
+    const palette = [...d3.schemeTableau10, ...d3.schemeSet3, ...d3.schemePaired];
+    state.typeColors.clear();
+    state.typeOrder.forEach((t, i) => state.typeColors.set(t, palette[i % palette.length]));
+
+    // default to all active
+    state.activeTypes = new Set(state.typeOrder);
+
+    // apply saved overrides
+    loadTypeStateFromStorage();
+  }
+
+  function resetTypeColors() {
+    const palette = [...d3.schemeTableau10, ...d3.schemeSet3, ...d3.schemePaired];
+    state.typeColors.clear();
+    state.typeOrder.forEach((t, i) => state.typeColors.set(t, palette[i % palette.length]));
+    persistTypeState();
+    updateLegend();
+    updateAll();
+    renderTypeModalList();
+  }
+
+  function toggleType(type) {
+    if (state.activeTypes.has(type)) state.activeTypes.delete(type);
+    else state.activeTypes.add(type);
+    persistTypeState();
+    updateLegend();
+    updateAll();
+  }
+
+  function openServiceModal() {
+    els.serviceModal.classList.remove("hidden");
+    els.serviceModal.setAttribute("aria-hidden", "false");
+    renderTypeModalList();
+    if (els.typeSearch) els.typeSearch.focus();
+  }
+
+  function closeServiceModal() {
+    els.serviceModal.classList.add("hidden");
+    els.serviceModal.setAttribute("aria-hidden", "true");
+  }
+
+  function renderTypeModalList() {
+    if (!els.typeList) return;
+    const q = (els.typeSearch?.value || "").trim().toLowerCase();
+    const types = state.typeOrder.filter(t => !q || t.toLowerCase().includes(q));
+
+    const rows = types.map(t => {
+      const count = state.typeCounts.get(t) || 0;
+      const checked = state.activeTypes.has(t) ? "checked" : "";
+      const color = getTypeColor(t);
+      return `
+        <div class="typeRow" data-type="${t}">
+          <div class="typeLeft">
+            <input class="typeCheck" type="checkbox" ${checked} />
+            <div>
+              <div class="typeName" title="${t}">${t}</div>
+              <div class="typeCount">${count.toLocaleString()} calls</div>
+            </div>
+          </div>
+          <div class="typeRight">
+            <input class="colorPick" type="color" value="${color}" />
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    els.typeList.innerHTML = rows || `<div style="padding:14px; color:rgba(232,245,255,0.62);">No matches</div>`;
+  }
+
+
+// -----------------------------
   // Filtering
   // -----------------------------
   function filterBaseRows() {
     let rows = state.rows;
+
+    // Service type toggles (Level 6)
+    if (state.activeTypes && state.activeTypes.size) {
+      rows = rows.filter(d => state.activeTypes.has(d.sr_type_desc));
+    } else {
+      rows = [];
+    }
 
     if (state.selectedNeighborhood) rows = rows.filter(d => d.neighborhood_top === state.selectedNeighborhood);
     if (state.selectedMethod) rows = rows.filter(d => d.method_received === state.selectedMethod);
@@ -299,6 +539,7 @@
   // Map points
   // -----------------------------
   function colorForPoint(d) {
+    if (state.colorMode === "service") return getTypeColor(d.sr_type_desc);
     if (state.colorMode === "neighborhood") return state.scales.neighborhood(d.neighborhood_top);
     if (state.colorMode === "priority") return state.scales.priority(d.priority);
     if (state.colorMode === "dept") return state.scales.dept(d.dept_name);
@@ -313,19 +554,67 @@
     return [pt.x, pt.y];
   }
 
+  function getRenderedPointRows(filteredMapRows) {
+    const wantPoints = (state.mapLayerMode === "points" || state.mapLayerMode === "both");
+    if (!wantPoints) {
+      return { drawRows: [], visibleRows: 0, sampled: false };
+    }
+
+    const bounds = map.getBounds().pad(0.08);
+    const inView = filteredMapRows.filter(d => bounds.contains([d.lat, d.lon]));
+
+    if (!inView.length) {
+      return { drawRows: [], visibleRows: 0, sampled: false };
+    }
+
+    const zoom = map.getZoom();
+    const cellSize = zoom <= 11 ? 8 : zoom === 12 ? 6 : zoom === 13 ? 5 : 4;
+    const seenCells = new Set();
+    const drawRows = [];
+
+    for (const d of inView) {
+      const p = map.latLngToContainerPoint([d.lat, d.lon]);
+      d.__screenX = p.x;
+      d.__screenY = p.y;
+
+      const cellX = Math.floor(p.x / cellSize);
+      const cellY = Math.floor(p.y / cellSize);
+      const key = `${cellX},${cellY}`;
+      if (seenCells.has(key)) continue;
+      seenCells.add(key);
+      drawRows.push(d);
+
+      if (drawRows.length >= POINT_RENDER_LIMIT) break;
+    }
+
+    return {
+      drawRows,
+      visibleRows: inView.length,
+      sampled: drawRows.length < inView.length
+    };
+  }
+
   function renderMapPoints() {
     const { filteredMapRows } = getFilteredSets();
+    const { drawRows, visibleRows, sampled } = getRenderedPointRows(filteredMapRows);
+    state.pointPerf = {
+      renderedCount: drawRows.length,
+      visibleRows,
+      sampled
+    };
+
+    const r = getPointRadius();
 
     const sel = gPoints.selectAll("circle.point")
-      .data(filteredMapRows, d => d.sr_number);
+      .data(drawRows, d => d.sr_number);
 
     sel.join(
       enter => enter.append("circle")
         .attr("class", "point")
-        .attr("r", 4.8)
-        .attr("stroke", "rgba(232,245,255,0.18)")
-        .attr("stroke-width", 1)
-        .attr("opacity", 0.85)
+        .attr("r", r)
+        .attr("stroke", "rgba(232,245,255,0.42)")
+        .attr("stroke-width", 1.1)
+        .attr("opacity", 0.94)
         .on("mousemove", (evt, d) => {
           showTooltip(evt, `
             <div class="ttTitle">${d.sr_type_desc}</div>
@@ -342,20 +631,22 @@
       update => update,
       exit => exit.remove()
     )
+    .attr("r", r)
     .attr("fill", d => colorForPoint(d))
+    .attr("stroke", "rgba(232,245,255,0.42)")
+    .attr("stroke-width", 1.1)
+    .attr("opacity", 0.94)
     .attr("class", d => {
       let cls = "point";
-      // hoverWeek highlight (soft)
       if (state.hoverWeek && d.week_start === state.hoverWeek) cls += " selected";
       return cls;
     })
-    .attr("cx", d => projectPoint(d.lat, d.lon)[0])
-    .attr("cy", d => projectPoint(d.lat, d.lon)[1]);
+    .attr("cx", d => d.__screenX ?? projectPoint(d.lat, d.lon)[0])
+    .attr("cy", d => d.__screenY ?? projectPoint(d.lat, d.lon)[1]);
   }
 
   function resetOverlay() {
-    // Leaflet manages the overlay svg transform, we only recompute point positions.
-    renderMapPoints();
+    schedulePointRender();
   }
 
   map.on("moveend zoomend", resetOverlay);
@@ -609,7 +900,97 @@
       .text(d => d.value >= 1 ? d.value.toLocaleString() : "");
   }
 
-  function renderAttributes() {
+  
+  // -----------------------------
+  // Service types chart (Level 6)
+  // -----------------------------
+  function renderServiceTypesChart() {
+    if (!els.chartService) return;
+    const root = d3.select(els.chartService);
+    root.selectAll("*").remove();
+
+    const { filteredRows } = getFilteredSets();
+
+    const counts = d3.rollups(
+      filteredRows,
+      v => v.length,
+      d => d.sr_type_desc
+    ).sort((a,b) => d3.descending(a[1], b[1]));
+
+    const dataPairs = counts.map(([k,v]) => ({ key: k, value: v }));
+    const data = topNWithOther(dataPairs, 10, "Other (grouped)");
+
+    const box = els.chartService.getBoundingClientRect();
+    const width = Math.max(360, box.width);
+    const height = Math.max(190, box.height);
+
+    const margin = { top: 10, right: 12, bottom: 22, left: 170 };
+    const iw = width - margin.left - margin.right;
+    const ih = height - margin.top - margin.bottom;
+
+    const svg = root.append("svg").attr("viewBox", `0 0 ${width} ${height}`);
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.value) || 1])
+      .nice()
+      .range([0, iw]);
+
+    const y = d3.scaleBand()
+      .domain(data.map(d => d.key))
+      .range([0, ih])
+      .padding(0.18);
+
+    g.append("g")
+      .attr("transform", `translate(0,${ih})`)
+      .call(d3.axisBottom(x).ticks(4))
+      .call(s => s.selectAll("text").attr("fill", "rgba(232,245,255,0.65)"))
+      .call(s => s.selectAll("path,line").attr("stroke", "rgba(232,245,255,0.14)"));
+
+    g.append("g")
+      .call(d3.axisLeft(y).tickSize(0))
+      .call(s => s.selectAll("text").attr("fill", "rgba(232,245,255,0.82)").attr("font-size", 11))
+      .call(s => s.selectAll("path,line").attr("stroke", "none"));
+
+    const bars = g.append("g")
+      .selectAll("rect")
+      .data(data)
+      .join("rect")
+      .attr("x", 0)
+      .attr("y", d => y(d.key))
+      .attr("width", d => x(d.value))
+      .attr("height", y.bandwidth())
+      .attr("rx", 8)
+      .attr("stroke", "rgba(232,245,255,0.10)")
+      .attr("stroke-width", 1)
+      .style("cursor", d => d.key.startsWith("Other") ? "default" : "pointer")
+      .attr("fill", d => {
+        if (d.key.startsWith("Other")) return "rgba(232,245,255,0.12)";
+        return getTypeColor(d.key);
+      })
+      .attr("opacity", d => {
+        if (d.key.startsWith("Other")) return 0.8;
+        return state.activeTypes.has(d.key) ? 0.92 : 0.18;
+      });
+
+    bars
+      .on("mousemove", (evt, d) => {
+        showTooltip(evt, `
+          <div class="ttTitle">Service type</div>
+          <div class="ttRow"><span class="ttKey">${d.key}</span> <span style="opacity:0.75">(${d.value.toLocaleString()})</span></div>
+          <div class="ttRow"><span class="ttKey">Active:</span> ${d.key.startsWith("Other") ? "Grouped" : (state.activeTypes.has(d.key) ? "Yes" : "No")}</div>
+        `);
+      })
+      .on("mouseleave", hideTooltip)
+      .on("click", (evt, d) => {
+        if (d.key.startsWith("Other")) return;
+        toggleType(d.key);
+        renderTypeModalList();
+      });
+  }
+
+
+function renderAttributes() {
     const { filteredRows } = getFilteredSets();
 
     const nPairs = d3.rollups(
@@ -777,26 +1158,33 @@
   // -----------------------------
   function updateAll() {
     updateActiveFiltersLabel();
+    syncHeatControls();
+    renderHeatmap();
     renderMapPoints();
     renderTimeline();
+    renderServiceTypesChart();
     renderAttributes();
 
     const { filteredRows } = getFilteredSets();
     const baseRows = filterBaseRows();
 
+    const wantPoints = (state.mapLayerMode === "points" || state.mapLayerMode === "both");
+    const pointNote = wantPoints && state.pointPerf && state.pointPerf.sampled
+      ? ` • Rendering ${state.pointPerf.renderedCount.toLocaleString()} representative points from ${state.pointPerf.visibleRows.toLocaleString()} visible for performance`
+      : "";
+
     setStatus(
       `Showing ${filteredRows.length.toLocaleString()} of ${state.rows.length.toLocaleString()} requests`,
-      `Filters apply across map, timeline, and attributes. Base set: ${baseRows.length.toLocaleString()}`
+      `Filters apply across map, timeline, and attributes. Base set: ${baseRows.length.toLocaleString()}${pointNote}`
     );
   }
-
-  // -----------------------------
+// -----------------------------
   // UI wiring
   // -----------------------------
   els.colorBy.addEventListener("change", (e) => {
     state.colorMode = e.target.value;
     updateLegend();
-    renderMapPoints();
+    schedulePointRender();
     setStatus(els.statusLine.textContent, `Color by: ${els.colorBy.options[els.colorBy.selectedIndex].text}`);
   });
 
@@ -807,12 +1195,76 @@
     map.removeLayer(baseLayers[state.basemap]);
     state.basemap = next;
     baseLayers[state.basemap].addTo(map);
+    applyBasemapTheme();
+    schedulePointRender();
   });
+
+  els.mapLayer.addEventListener("change", (e) => {
+    state.mapLayerMode = e.target.value;
+    updateAll();
+  });
+
+  els.heatRadius.addEventListener("input", (e) => {
+    state.heatRadius = +e.target.value;
+    renderHeatmap();
+  });
+
+  els.serviceTypesBtn.addEventListener("click", () => openServiceModal());
+  els.closeServiceModal.addEventListener("click", () => closeServiceModal());
+
+  // close modal on backdrop click
+  els.serviceModal.addEventListener("click", (e) => {
+    if (e.target === els.serviceModal) closeServiceModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !els.serviceModal.classList.contains("hidden")) closeServiceModal();
+  });
+
+  els.typeSearch.addEventListener("input", () => renderTypeModalList());
+
+  els.typesAll.addEventListener("click", () => {
+    state.activeTypes = new Set(state.typeOrder);
+    persistTypeState();
+    updateLegend();
+    updateAll();
+    renderTypeModalList();
+  });
+
+  els.typesNone.addEventListener("click", () => {
+    state.activeTypes = new Set();
+    persistTypeState();
+    updateLegend();
+    updateAll();
+    renderTypeModalList();
+  });
+
+  els.typesResetColors.addEventListener("click", () => resetTypeColors());
+
+  // delegate checkbox + color pick events
+  els.typeList.addEventListener("change", (e) => {
+    const row = e.target.closest(".typeRow");
+    if (!row) return;
+    const type = row.getAttribute("data-type");
+
+    if (e.target.classList.contains("typeCheck")) {
+      toggleType(type);
+      renderTypeModalList();
+    }
+
+    if (e.target.classList.contains("colorPick")) {
+      state.typeColors.set(type, e.target.value);
+      persistTypeState();
+      updateLegend();
+      updateAll();
+    }
+  });
+
 
   els.resetView.addEventListener("click", () => {
     state.hoverWeek = null;
     map.setView(CINCY_CENTER, 12);
-    renderMapPoints();
+    schedulePointRender();
   });
 
   els.clearFilters.addEventListener("click", () => {
@@ -842,7 +1294,7 @@
 
     const [meta, rows] = await Promise.all([
       d3.json("./data/meta.json"),
-      d3.csv("./data/pothole_2025.csv", rowParser)
+      d3.csv("./data/311_multi_2025_top16.csv", rowParser)
     ]);
 
     state.meta = meta;
@@ -854,11 +1306,20 @@
     els.missingCount.textContent = meta.missing_coords.toLocaleString();
 
     buildScales();
+    initTypesFromData();
+
+    // sync defaults from UI
+    state.colorMode = els.colorBy.value || state.colorMode;
+    state.mapLayerMode = els.mapLayer.value || state.mapLayerMode;
+    state.heatRadius = +els.heatRadius.value || state.heatRadius;
+
     updateLegend();
+    syncHeatControls();
+    renderTypeModalList();
 
     setStatus(
       `Loaded ${meta.total_requests.toLocaleString()} requests`,
-      `${meta.service_type_desc} • ${meta.date_range[0]} to ${meta.date_range[1]}`
+      `${(meta.service_types_included ? meta.service_types_included.length : state.typeOrder.length)} service types • ${meta.date_range[0]} to ${meta.date_range[1]}`
     );
 
     updateAll();

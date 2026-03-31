@@ -1,12 +1,47 @@
 {
-  "service_type_desc": "POTHOLE, REPAIR",
   "year": 2025,
-  "total_requests": 10327,
-  "mappable_requests": 10327,
+  "total_requests": 86852,
+  "mappable_requests": 86852,
   "missing_coords": 0,
   "date_range": [
     "2025-01-02",
     "2025-12-31"
   ],
-  "note": "Derived fields: update_delay_days = DATE_LAST_UPDATE - DATE_CREATED in days; week_start is Monday."
+  "service_types_included": [
+    "METAL FURNITURE, SPEC COLLECTN",
+    "TRASH, BULK ITEM PICK-UP",
+    "POTHOLE, REPAIR",
+    "SLIPPERY STREETS, REQUEST",
+    "BUILDING, RESIDENTIAL",
+    "TRASH, MISSED COLLECTION",
+    "VEHICLE, OVERTIME PARKER",
+    "TALL GRASS/WEEDS, PRIVATE PROP",
+    "311 ASSISTANCE",
+    "TRASH, REQUEST FOR COLLECTION",
+    "LITTER, PRIVATE PROPERTY",
+    "SIGN, DOWN/MISSING",
+    "TRASH, IMPROPER SET OUT",
+    "SIGNAL, TRAF/PED/SCHOOL REPAIR",
+    "TRASH CART, REGISTRATION",
+    "VEHICLE, ROW JUNK/ABAN"
+  ],
+  "service_type_counts": {
+    "METAL FURNITURE, SPEC COLLECTN": 19528,
+    "TRASH, BULK ITEM PICK-UP": 12668,
+    "POTHOLE, REPAIR": 10327,
+    "SLIPPERY STREETS, REQUEST": 5561,
+    "BUILDING, RESIDENTIAL": 4376,
+    "TRASH, MISSED COLLECTION": 4194,
+    "VEHICLE, OVERTIME PARKER": 4190,
+    "TALL GRASS/WEEDS, PRIVATE PROP": 4172,
+    "311 ASSISTANCE": 3812,
+    "TRASH, REQUEST FOR COLLECTION": 3316,
+    "LITTER, PRIVATE PROPERTY": 3029,
+    "SIGN, DOWN/MISSING": 2668,
+    "TRASH, IMPROPER SET OUT": 2541,
+    "SIGNAL, TRAF/PED/SCHOOL REPAIR": 2293,
+    "TRASH CART, REGISTRATION": 2116,
+    "VEHICLE, ROW JUNK/ABAN": 2061
+  },
+  "note": "Subset: top 16 SR_TYPE_DESC by count in 2025. Derived fields: update_delay_days (days), week_start Monday."
 }

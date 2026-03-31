@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Project 2 — Cincinnati 311 | Pothole Repair</title>
+  <title>Project 2 — Cincinnati 311 Explorer</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,9 +28,9 @@
     <header class="topbar glass">
       <div class="titleblock">
         <div class="kicker">Data Visualization — Project 2</div>
-        <h1>Cincinnati 3-1-1, Pothole Repair</h1>
+        <h1>Cincinnati 3-1-1 Explorer</h1>
         <div class="subtitle">
-          Spatial distribution + calls-over-time for <span class="pill">POTHOLE, REPAIR</span> (2025).
+          Spatial distribution + calls-over-time for multiple service types (2025).
           Built with Leaflet + D3.
         </div>
       </div>
@@ -55,11 +55,26 @@
       <div class="control">
         <label for="colorBy">Color by</label>
         <select id="colorBy">
-          <option value="delay" selected>Time between created and last update</option>
+          <option value="service" selected>Service type</option>
+          <option value="delay">Time between created and last update</option>
           <option value="neighborhood">Neighborhood (top)</option>
           <option value="priority">Priority</option>
           <option value="dept">Public agency (department)</option>
         </select>
+      </div>
+
+      <div class="control">
+        <label for="mapLayer">Map layer</label>
+        <select id="mapLayer">
+          <option value="heat" selected>Heatmap</option>
+          <option value="points">Points</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+
+      <div class="control heatOnly" id="heatControls">
+        <label for="heatRadius">Heat radius</label>
+        <input id="heatRadius" type="range" min="10" max="42" value="24" />
       </div>
 
       <div class="control">
@@ -73,7 +88,13 @@
 
       <div class="control">
         <label>&nbsp;</label>
+        <button id="serviceTypesBtn" class="btn ghost">Service types</button>
+      </div>
+
+      <div class="control">
+        <label>&nbsp;</label>
         <button id="resetView" class="btn">Reset view</button>
+      </div>
 
       <div class="control">
         <label>&nbsp;</label>
@@ -83,8 +104,6 @@
       <div class="control">
         <label>&nbsp;</label>
         <button id="toggleBrush" class="btn ghost">Map brush: Off</button>
-      </div>
-
       </div>
 
       <div class="status">
@@ -153,6 +172,11 @@
         </div>
 
         <div class="attrGrid">
+          <div class="miniPanel span2">
+            <div class="miniTitle">Service types</div>
+            <div class="miniSub">Counts by SR_TYPE_DESC, click a bar to toggle visibility, colors match the map</div>
+            <div id="chartService" class="vizMed"></div>
+          </div>
           <div class="miniPanel">
             <div class="miniTitle">Neighborhoods</div>
             <div id="chartNeighborhood" class="vizSmall"></div>
@@ -179,13 +203,42 @@
 
   </div>
 
-  <div id="tooltip" class="tooltip hidden" role="dialog" aria-hidden="true"></div>
+  
+  <div id="serviceModal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modalCard glass">
+      <div class="modalHeader">
+        <div>
+          <div class="kicker">Level 6</div>
+          <h3>Service types</h3>
+          <div class="subtitle small">Toggle service types and customize colors. This updates the map, timeline, and all attribute views.</div>
+        </div>
+        <button id="closeServiceModal" class="iconBtn" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modalControls">
+        <input id="typeSearch" class="input" type="text" placeholder="Search service types…" />
+        <button id="typesAll" class="btn small">All</button>
+        <button id="typesNone" class="btn small ghost">None</button>
+        <button id="typesResetColors" class="btn small ghost">Reset colors</button>
+      </div>
+
+      <div id="typeList" class="typeList"></div>
+
+      <div class="modalFoot">
+        <div class="muted">Tip: If points feel dense, switch Map layer to Heatmap or reduce active types.</div>
+      </div>
+    </div>
+  </div>
+
+<div id="tooltip" class="tooltip hidden" role="dialog" aria-hidden="true"></div>
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script src="./js/main.js"></script>
 </body>

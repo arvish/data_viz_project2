@@ -1,0 +1,12 @@
+{
+  "service_type_desc": "POTHOLE, REPAIR",
+  "year": 2025,
+  "total_requests": 10327,
+  "mappable_requests": 10327,
+  "missing_coords": 0,
+  "date_range": [
+    "2025-01-02",
+    "2025-12-31"
+  ],
+  "note": "Derived fields: update_delay_days = DATE_LAST_UPDATE - DATE_CREATED in days; week_start is Monday."
+}
