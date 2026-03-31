@@ -1,4 +1,7 @@
+
 /* global L, d3 */
+
+
 (function () {
   const CINCY_CENTER = [39.1031, -84.5120];
 
@@ -115,9 +118,6 @@
     mapEl.dataset.basemap = state.basemap;
   }
 
-  // -----------------------------
-  // Leaflet map + base layers
-  // -----------------------------
   const baseLayers = {
     dark: L.tileLayer(
       "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
@@ -191,10 +191,8 @@
     if (els.heatControls) els.heatControls.classList.toggle("hidden", !show);
   }
 
-
-  // -----------------------------
   // Helpers
-  // -----------------------------
+ 
   function setStatus(line, sub = "") {
     els.statusLine.textContent = line;
     els.statusSub.textContent = sub;
@@ -222,9 +220,6 @@
     return `${s.slice(0, Math.max(0, maxChars - 1)).trim()}…`;
   }
 
-  // -----------------------------
-  // Data parsing
-  // -----------------------------
   function rowParser(d) {
     const lat = +d.LATITUDE;
     const lon = +d.LONGITUDE;
@@ -258,9 +253,6 @@
     };
   }
 
-  // -----------------------------
-  // Scales and legends
-  // -----------------------------
   function buildScales() {
     const delays = state.rows
       .map(d => d.update_delay_days)

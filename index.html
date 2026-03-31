@@ -1,9 +1,11 @@
+<!-- NAME - ARVISH PANDEY -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Project 2 — Cincinnati 311 Explorer</title>
+  <title>Cincinnati 311 Console</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,29 +27,15 @@
   <div class="glow glow-b" aria-hidden="true"></div>
 
   <div class="app-shell">
-    <header class="topbar glass">
-      <div class="titleblock">
-        <div class="kicker">Data Visualization — Project 2</div>
-        <h1>Cincinnati 3-1-1 Explorer</h1>
-        <div class="subtitle">
-          Spatial distribution + calls-over-time for multiple service types (2025).
-          Built with Leaflet + D3.
-        </div>
+    <header class="topbar glass heroBar">
+      <div class="titleblock consoleTitleBlock">
+        <h1 class="consoleTitle">Cincinnati 311 Console</h1>
+        <div class="consoleSub">Live spatial console for Cincinnati service requests</div>
       </div>
 
-      <div class="meta">
-        <div class="metaItem">
-          <div class="metaLabel">Author</div>
-          <div class="metaValue">Arvish Pandey</div>
-        </div>
-        <div class="metaItem">
-          <div class="metaLabel">Data source</div>
-          <div class="metaValue">Cincinnati Open Data Portal</div>
-        </div>
-        <div class="metaItem">
-          <div class="metaLabel">Year</div>
-          <div class="metaValue" id="yearLabel">—</div>
-        </div>
+      <div class="consoleMeta">
+        <div class="metaChip nameChip">Arvish Pandey</div>
+        <div class="metaChip yearChip" id="yearLabel">—</div>
       </div>
     </header>
 
