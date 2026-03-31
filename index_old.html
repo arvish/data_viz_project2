@@ -171,49 +171,27 @@
           </div>
         </div>
 
-        <div class="attrCarousel">
-          <div class="attrCarouselHeader">
-            <button id="attrPrev" class="iconBtn attrNav" aria-label="Previous attribute slide">◀</button>
-            <div class="attrSlideMeta">
-              <div class="pill soft" id="attrSlideLabel">Service types</div>
-            </div>
-            <button id="attrNext" class="iconBtn attrNav" aria-label="Next attribute slide">▶</button>
+        <div class="attrGrid">
+          <div class="miniPanel span2">
+            <div class="miniTitle">Service types</div>
+            <div class="miniSub">Counts by SR_TYPE_DESC, click a bar to toggle visibility, colors match the map</div>
+            <div id="chartService" class="vizMed"></div>
           </div>
-
-          <div class="attrViewport">
-            <div class="attrSlide active" data-slide="0">
-              <div class="miniPanel slideFill">
-                <div class="miniTitle">Service types</div>
-                <div class="miniSub">Counts by SR_TYPE_DESC, click a bar to toggle visibility, colors match the map</div>
-                <div id="chartService" class="vizTall"></div>
-              </div>
-            </div>
-
-            <div class="attrSlide" data-slide="1">
-              <div class="attrGrid attrGridSlide2">
-                <div class="miniPanel slideFill">
-                  <div class="miniTitle">Neighborhoods</div>
-                  <div id="chartNeighborhood" class="vizTall"></div>
-                </div>
-                <div class="miniPanel slideFill">
-                  <div class="miniTitle">Method received</div>
-                  <div id="chartMethod" class="vizTall"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="attrSlide" data-slide="2">
-              <div class="attrGrid attrGridSlide2">
-                <div class="miniPanel slideFill">
-                  <div class="miniTitle">Responsible department</div>
-                  <div id="chartDept" class="vizTall"></div>
-                </div>
-                <div class="miniPanel slideFill">
-                  <div class="miniTitle">Priority levels</div>
-                  <div id="chartPriority" class="vizTall"></div>
-                </div>
-              </div>
-            </div>
+          <div class="miniPanel">
+            <div class="miniTitle">Neighborhoods</div>
+            <div id="chartNeighborhood" class="vizSmall"></div>
+          </div>
+          <div class="miniPanel">
+            <div class="miniTitle">Method received</div>
+            <div id="chartMethod" class="vizSmall"></div>
+          </div>
+          <div class="miniPanel">
+            <div class="miniTitle">Responsible department</div>
+            <div id="chartDept" class="vizSmall"></div>
+          </div>
+          <div class="miniPanel">
+            <div class="miniTitle">Priority levels</div>
+            <div id="chartPriority" class="vizSmall"></div>
           </div>
         </div>
 

@@ -297,9 +297,29 @@ select:focus, button:focus{
 .legendRow{
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   margin: 5px 0;
+}
+.legendList{
+  display: grid;
+  gap: 4px;
+}
+.legendSwatch{
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.22);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 1px rgba(7,17,26,0.22) inset;
+}
+.legendKey{
+  color: rgba(232,245,255,0.86);
+  line-height: 1.2;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .swatch{
   width: 14px;
@@ -593,9 +613,11 @@ circle.point.dimmed{
 .modal.hidden{ display: none; }
 .modalCard{
   width: min(860px, 92vw);
-  max-height: min(78vh, 720px);
+  max-height: min(84vh, 760px);
   overflow: hidden;
   padding: 14px;
+  display: flex;
+  flex-direction: column;
 }
 .modalHeader{
   display:flex;
@@ -652,7 +674,10 @@ circle.point.dimmed{
   border: 1px solid rgba(232,245,255,0.08);
   background: rgba(7, 17, 26, 0.22);
   overflow: auto;
-  max-height: 52vh;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  padding-bottom: 6px;
 }
 
 .typeRow{
@@ -695,4 +720,112 @@ circle.point.dimmed{
   border: none;
   background: transparent;
   padding: 0;
+}
+
+
+#map[data-basemap="light"] .leaflet-tile-pane{
+  filter: brightness(0.76) contrast(1.05) saturate(0.82);
+}
+#map[data-basemap="light"]::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 14, 22, 0.16);
+  pointer-events: none;
+  z-index: 240;
+}
+
+.modalFoot{
+  margin-top: 10px;
+  flex: 0 0 auto;
+}
+.muted{
+  color: rgba(232,245,255,0.62);
+  font-size: 0.82rem;
+}
+
+
+/* Round 2: attribute carousel */
+.attrCarousel{
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.attrCarouselHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.attrSlideMeta{
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+}
+.attrNav{
+  width: 42px;
+  min-width: 42px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.attrViewport{
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.attrSlide{
+  display: none;
+  height: 100%;
+  min-height: 0;
+}
+.attrSlide.active{
+  display: flex;
+}
+.slideFill{
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.attrGridSlide2{
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.attrGridSlide2 .miniPanel{
+  min-height: 0;
+}
+.vizTall{
+  flex: 1 1 auto;
+  min-height: 280px;
+  height: auto;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(232,245,255,0.10);
+  background: rgba(7, 17, 26, 0.22);
+}
+.vizTall svg{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+#attrPanel{
+  min-height: 0;
+}
+#attrPanel .footnote{
+  margin-top: 10px;
+}
+@media (max-width: 1200px){
+  .attrGridSlide2{
+    grid-template-columns: 1fr;
+  }
+  .vizTall{
+    min-height: 220px;
+  }
 }

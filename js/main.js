@@ -30,6 +30,9 @@
     chartMethod: document.getElementById("chartMethod"),
     chartDept: document.getElementById("chartDept"),
     chartPriority: document.getElementById("chartPriority"),
+    attrPrev: document.getElementById("attrPrev"),
+    attrNext: document.getElementById("attrNext"),
+    attrSlideLabel: document.getElementById("attrSlideLabel"),
 
     // Modal
     serviceModal: document.getElementById("serviceModal"),
@@ -74,6 +77,9 @@
 
     // map brush
     brushMode: false,
+
+    attrSlide: 0,
+    attrSlideLabels: ["Service types", "Neighborhoods + Method", "Department + Priority"],
 
     // computed
     scales: {
@@ -208,6 +214,12 @@
   function fmtDate(d) {
     if (!d) return "—";
     return d3.timeFormat("%Y-%m-%d")(d);
+  }
+
+  function truncateLabel(text, maxChars) {
+    const s = String(text ?? "");
+    if (s.length <= maxChars) return s;
+    return `${s.slice(0, Math.max(0, maxChars - 1)).trim()}…`;
   }
 
   // -----------------------------
@@ -532,6 +544,13 @@
     if (state.selectedPriority) chips.push(`Priority: ${state.selectedPriority}`);
     if (state.mapSelection && state.mapSelection.size) chips.push(`Map selection: ${state.mapSelection.size}`);
 
+    const totalTypes = state.typeOrder ? state.typeOrder.length : 0;
+    const activeTypes = state.activeTypes ? state.activeTypes.size : 0;
+    if (totalTypes && activeTypes !== totalTypes) {
+      if (activeTypes === 0) chips.push('Service types: none');
+      else chips.push(`Service types: ${activeTypes}/${totalTypes}`);
+    }
+
     els.activeFilters.textContent = chips.length ? chips.join(" • ") : "No active filters";
   }
 
@@ -573,12 +592,12 @@
     const drawRows = [];
 
     for (const d of inView) {
-      const p = map.latLngToContainerPoint([d.lat, d.lon]);
-      d.__screenX = p.x;
-      d.__screenY = p.y;
+      const layerPt = map.latLngToLayerPoint([d.lat, d.lon]);
+      d.__layerX = layerPt.x;
+      d.__layerY = layerPt.y;
 
-      const cellX = Math.floor(p.x / cellSize);
-      const cellY = Math.floor(p.y / cellSize);
+      const cellX = Math.floor(layerPt.x / cellSize);
+      const cellY = Math.floor(layerPt.y / cellSize);
       const key = `${cellX},${cellY}`;
       if (seenCells.has(key)) continue;
       seenCells.add(key);
@@ -641,8 +660,8 @@
       if (state.hoverWeek && d.week_start === state.hoverWeek) cls += " selected";
       return cls;
     })
-    .attr("cx", d => d.__screenX ?? projectPoint(d.lat, d.lon)[0])
-    .attr("cy", d => d.__screenY ?? projectPoint(d.lat, d.lon)[1]);
+    .attr("cx", d => d.__layerX ?? projectPoint(d.lat, d.lon)[0])
+    .attr("cy", d => d.__layerY ?? projectPoint(d.lat, d.lon)[1]);
   }
 
   function resetOverlay() {
@@ -741,7 +760,7 @@
 
     function setHoverWeek(weekStr) {
       state.hoverWeek = weekStr;
-      renderMapPoints();
+      schedulePointRender();
     }
 
     bars
@@ -763,6 +782,7 @@
     const brush = d3.brushX()
       .extent([[0, 0], [iw, ih]])
       .on("end", (evt) => {
+        if (!evt.sourceEvent) return;
         if (!evt.selection) {
           state.timeRange = null;
           updateAll();
@@ -824,7 +844,7 @@
     const width = Math.max(240, box.width);
     const height = Math.max(160, box.height);
 
-    const margin = { top: 10, right: 10, bottom: 18, left: 128 };
+    const margin = { top: 10, right: 18, bottom: 18, left: width < 360 ? 118 : 132 };
     const iw = width - margin.left - margin.right;
     const ih = height - margin.top - margin.bottom;
 
@@ -848,7 +868,7 @@
       .call(s => s.selectAll("path,line").attr("stroke", "rgba(232,245,255,0.14)"));
 
     g.append("g")
-      .call(d3.axisLeft(y).tickSize(0))
+      .call(d3.axisLeft(y).tickSize(0).tickFormat(d => truncateLabel(d, width < 360 ? 14 : 18)))
       .call(s => s.selectAll("text").attr("fill", "rgba(232,245,255,0.82)").attr("font-size", 11))
       .call(s => s.selectAll("path,line").attr("stroke", "none"));
 
@@ -924,7 +944,7 @@
     const width = Math.max(360, box.width);
     const height = Math.max(190, box.height);
 
-    const margin = { top: 10, right: 12, bottom: 22, left: 170 };
+    const margin = { top: 10, right: 16, bottom: 22, left: 220 };
     const iw = width - margin.left - margin.right;
     const ih = height - margin.top - margin.bottom;
 
@@ -948,7 +968,7 @@
       .call(s => s.selectAll("path,line").attr("stroke", "rgba(232,245,255,0.14)"));
 
     g.append("g")
-      .call(d3.axisLeft(y).tickSize(0))
+      .call(d3.axisLeft(y).tickSize(0).tickFormat(d => truncateLabel(d, 26)))
       .call(s => s.selectAll("text").attr("fill", "rgba(232,245,255,0.82)").attr("font-size", 11))
       .call(s => s.selectAll("path,line").attr("stroke", "none"));
 
@@ -989,6 +1009,26 @@
       });
   }
 
+
+
+  function renderAttrCarousel() {
+    const slides = document.querySelectorAll('.attrSlide');
+    slides.forEach((slide, idx) => {
+      slide.classList.toggle('active', idx === state.attrSlide);
+    });
+    if (els.attrSlideLabel) {
+      els.attrSlideLabel.textContent = state.attrSlideLabels[state.attrSlide] || 'Attributes';
+    }
+  }
+
+  function shiftAttrSlide(dir) {
+    const total = state.attrSlideLabels.length;
+    state.attrSlide = (state.attrSlide + dir + total) % total;
+    renderAttrCarousel();
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 0);
+  }
 
 function renderAttributes() {
     const { filteredRows } = getFilteredSets();
@@ -1164,6 +1204,7 @@ function renderAttributes() {
     renderTimeline();
     renderServiceTypesChart();
     renderAttributes();
+    renderAttrCarousel();
 
     const { filteredRows } = getFilteredSets();
     const baseRows = filterBaseRows();
@@ -1261,10 +1302,14 @@ function renderAttributes() {
   });
 
 
+  els.attrPrev.addEventListener("click", () => shiftAttrSlide(-1));
+  els.attrNext.addEventListener("click", () => shiftAttrSlide(1));
+
   els.resetView.addEventListener("click", () => {
     state.hoverWeek = null;
     map.setView(CINCY_CENTER, 12);
-    schedulePointRender();
+    resizeBrushOverlay();
+    updateAll();
   });
 
   els.clearFilters.addEventListener("click", () => {
@@ -1275,11 +1320,17 @@ function renderAttributes() {
     state.selectedPriority = null;
     state.mapSelection = null;
     state.hoverWeek = null;
+    state.activeTypes = new Set(state.typeOrder);
+    persistTypeState();
+
+    if (els.typeSearch) els.typeSearch.value = "";
 
     // clear brush visuals if present
     if (brushG && mapBrush) brushG.call(mapBrush.move, null);
 
+    updateLegend();
     updateAll();
+    renderTypeModalList();
   });
 
   els.toggleBrush.addEventListener("click", () => {
