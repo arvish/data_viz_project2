@@ -8,10 +8,9 @@
 ---
 
 ## Links
-**Live application:** [PLACEHOLDER: Paste your deployed URL (Netlify or Vercel)]  
-**GitHub repository:** [PLACEHOLDER: Paste your GitHub repo URL]  
-**Portfolio documentation page:** [PLACEHOLDER: Paste the public portfolio page URL]  
-**Demo video (2 to 3 minutes):** [PLACEHOLDER: Paste a public YouTube link or embedded video link]
+**Live application:** [Live Netlify](https://cincy311.netlify.app/)  
+**GitHub repository:** [GitHub Repo](https://github.com/arvish/data_viz_project2)  
+**Demo video:** [YouTube](https://youtu.be/CawzMJdiuD4)
 
 **Screenshots:**  
 [PLACEHOLDER: Insert 3 to 6 screenshots showing the map, timeline, attribute charts, brushing, service type toggles, and heatmap]
